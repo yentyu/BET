@@ -1,6 +1,8 @@
 # Copyright (C) 2016 The BET Development Team
 
 
+from builtins import range
+from builtins import object
 import unittest, os, glob
 import numpy as np
 import numpy.testing as nptest

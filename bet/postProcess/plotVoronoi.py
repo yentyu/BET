@@ -3,7 +3,10 @@
 """
 This module provides methods for Voronoi plots. 
 """
+from __future__ import division
 
+from builtins import zip
+from past.utils import old_div
 import copy, math
 import numpy as np
 import matplotlib
@@ -93,7 +96,7 @@ def plot_1D_voronoi(sample_set, density=True, filename="file",
     if comm.rank == 0:
         fig = plt.figure(0)
         if density:
-            plt.hlines(sample_obj._probabilities[ind_sort]/(maxes-mins), mins, maxes)
+            plt.hlines(old_div(sample_obj._probabilities[ind_sort],(maxes-mins)), mins, maxes)
             plt.ylabel(r'$\rho_{\lambda}$', fontsize=20)
         else:
             plt.hlines(sample_obj._probabilities[ind_sort], mins, maxes)
@@ -184,7 +187,7 @@ def plot_2D_voronoi(sample_set, density=True, colormap_type='BuGn',
         fig = plt.figure(0)
         cmap = matplotlib.cm.get_cmap(colormap_type)
         if density:
-            P = sample_obj._probabilities/sample_obj._volumes
+            P = old_div(sample_obj._probabilities,sample_obj._volumes)
         else:
             P = sample_obj._probabilities
         P_max = np.max(P)
@@ -192,7 +195,7 @@ def plot_2D_voronoi(sample_set, density=True, colormap_type='BuGn',
         # plot each cell
         for i,region in enumerate(regions):
             polygon = vertices[region]
-            plt.fill(*zip(*polygon),color=cmap(P[i]/P_max), edgecolor = 'k', linewidth = 0.005)
+            plt.fill(*list(zip(*polygon)),color=cmap(old_div(P[i],P_max)), edgecolor = 'k', linewidth = 0.005)
 
         plt.axis([sample_obj._domain[0][0], sample_obj._domain[0][1], sample_obj._domain[1][0], sample_obj._domain[1][1]])
         if lam_ref is not None:

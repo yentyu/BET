@@ -25,6 +25,7 @@ We then calculate the
 gradients using an RBF scheme and use the gradient information to choose the
 optimal set of 2 (3, 4, ... input_dim) QoIs to use in the inverse problem.
 """
+from __future__ import print_function
 
 import numpy as np
 import bet.sensitivity.gradients as grad
@@ -123,6 +124,6 @@ calculateP.prob(my_discretization)
 # Print the approximate percentage of the measure of the parameter space defined
 # by the support of the inverse density
 if comm.rank == 0:
-    print 'The approximate percentage of the measure of the parameter space defined'
-    print 'by the support of the inverse density associated with the choice of QoI map is'
-    print np.sum(input_samples.get_volumes()[indices_in_inverse])
+    print('The approximate percentage of the measure of the parameter space defined')
+    print('by the support of the inverse density associated with the choice of QoI map is')
+    print(np.sum(input_samples.get_volumes()[indices_in_inverse]))

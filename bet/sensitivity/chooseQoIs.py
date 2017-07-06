@@ -4,6 +4,9 @@
 This module contains functions for choosing optimal sets of QoIs to use in the
 stochastic inverse problem.  
 """
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 import logging
 from itertools import combinations
 import numpy as np
@@ -64,7 +67,7 @@ def calculate_avg_measure(input_set, qoi_set=None, bin_measure=None):
     if avg_prod_singvals == 0:
         avg_measure = np.inf
     else:
-        avg_measure = bin_measure / avg_prod_singvals
+        avg_measure = old_div(bin_measure, avg_prod_singvals)
 
     return avg_measure, singvals
 
@@ -109,7 +112,7 @@ def calculate_avg_skewness(input_set, qoi_set=None):
     # Calculate the measure of the parallelepipeds defined by the rows of each
     # Jacobian if we remove the i'th row.
     muGi = np.zeros([num_centers, output_dim])
-    for i in xrange(G.shape[1]):
+    for i in range(G.shape[1]):
         muGi[:, i] = np.prod(np.linalg.svd(np.delete(G, i, axis=1),
             compute_uv=False), axis=1)
 
@@ -118,14 +121,14 @@ def calculate_avg_skewness(input_set, qoi_set=None):
 
     # Find the norm of the new vector, giperp, that is perpendicular to the span
     # of the other vectors and defines a parallelepiped of the same measure.
-    normgiperp = muG / muGi
+    normgiperp = old_div(muG, muGi)
 
     # We now calculate the local skewness
     skewgi = np.zeros([num_centers, output_dim])
 
     # The local skewness is calculated for nonzero giperp
-    skewgi[normgiperp != 0] = normgi[normgiperp != 0] / \
-            normgiperp[normgiperp != 0]
+    skewgi[normgiperp != 0] = old_div(normgi[normgiperp != 0], \
+            normgiperp[normgiperp != 0])
 
     # If giperp is the zero vector, it is not GD from the rest of the gradient
     # vectors, so the skewness is infinity.
@@ -182,7 +185,7 @@ def calculate_avg_condnum(input_set, qoi_set=None):
     else:
         singvals[indz, 0] = np.inf
         singvals[indz, -1] = 1
-        condnums = singvals[:, 0] / singvals[:, -1]
+        condnums = old_div(singvals[:, 0], singvals[:, -1])
         hmean_condnum = stats.hmean(condnums)
 
     return hmean_condnum, singvals
@@ -270,7 +273,7 @@ def chooseOptQoIs_verbose(input_set, qoiIndices=None, num_qois_return=None,
     num_centers = G.shape[0]
 
     if qoiIndices is None:
-        qoiIndices = xrange(0, G.shape[1])
+        qoiIndices = range(0, G.shape[1])
     if num_qois_return is None:
         num_qois_return = input_dim
     if num_optsets_return is None:
@@ -299,7 +302,7 @@ def chooseOptQoIs_verbose(input_set, qoiIndices=None, num_qois_return=None,
     measure_skewness_indices_mat[:, 0] = np.inf
     optsingvals_tensor = np.zeros([num_centers, num_qois_return,
         num_optsets_return])
-    for qoi_set in xrange(len(qoi_combs)):
+    for qoi_set in range(len(qoi_combs)):
         if measure == False:
             (current_measskew, singvals) = calculate_avg_skewness(input_set,
                 qoi_combs[qoi_set])
@@ -375,7 +378,7 @@ def find_unique_vecs(input_set, inner_prod_tol, qoiIndices=None,
     input_dim = input_set._dim
     G = input_set._jacobians
     if qoiIndices is None:
-        qoiIndices = xrange(0, G.shape[1])
+        qoiIndices = range(0, G.shape[1])
 
     # Normalize the gradient vectors with respect to the 2-norm so the inner
     # product tells us about the angle between the two vectors.
@@ -384,7 +387,7 @@ def find_unique_vecs(input_set, inner_prod_tol, qoiIndices=None,
     # Remove any QoI that has a zero vector at atleast one of the centers.
     if remove_zeros:
         indz = np.array([])
-        for i in xrange(norm_G.shape[1]):
+        for i in range(norm_G.shape[1]):
             if np.sum(norm_G[:, i] == 0) > 0:
                 indz = np.append(indz, i)
     else:
@@ -394,7 +397,7 @@ def find_unique_vecs(input_set, inner_prod_tol, qoiIndices=None,
     norm_G[norm_G == 0] = 1.0
 
     # Normalize each gradient vector
-    G = G/np.tile(norm_G, (input_dim, 1, 1)).transpose(1, 2, 0)
+    G = old_div(G,np.tile(norm_G, (input_dim, 1, 1)).transpose(1, 2, 0))
 
     if comm.rank == 0:
         logging.info('*** find_unique_vecs ***')
@@ -410,13 +413,13 @@ def find_unique_vecs(input_set, inner_prod_tol, qoiIndices=None,
     # second QoI if the angle is below some tolerance.  At this point all the
     # vectors are normalized, so the inner product will be between -1 and 1.
     repeat_vec = np.array([])
-    for qoi_set in xrange(len(qoi_combs)):
+    for qoi_set in range(len(qoi_combs)):
         curr_set = qoi_combs[qoi_set]
 
         # If neither of the current QoIs are in the repeat_vec, test them
         if curr_set[0] not in repeat_vec and curr_set[1] not in repeat_vec:
-            curr_inner_prod = np.sum(G[:, curr_set[0], :] * \
-                G[:, curr_set[1], :]) / G.shape[0]
+            curr_inner_prod = old_div(np.sum(G[:, curr_set[0], :] * \
+                G[:, curr_set[1], :]), G.shape[0])
 
             # If the innerprod>tol, throw out the second QoI
             if np.abs(curr_inner_prod) > inner_prod_tol:
@@ -478,7 +481,7 @@ def find_good_sets(input_set, good_sets_prev, unique_indices,
     # For each good set of size (n - 1), find the possible sets of size n and
     # compute the average skewness of each
     count_qois = 0
-    for i in xrange(good_sets_prev.shape[0]):
+    for i in range(good_sets_prev.shape[0]):
         min_ind = np.max(good_sets_prev[i, :])
         # Find all possible combinations of QoIs that include this set of
         # (n - 1)
@@ -501,7 +504,7 @@ def find_good_sets(input_set, good_sets_prev, unique_indices,
 
         # For each combination, compute the average measure(skewness) and add
         # the set to good_sets if it is less than measskew_tol
-        for qoi_set in xrange(len(qoi_combs)):
+        for qoi_set in range(len(qoi_combs)):
             count_qois += 1
             curr_set = util.fix_dimensions_vector_2darray(qoi_combs[qoi_set])\
                 .transpose()
@@ -651,7 +654,7 @@ def chooseOptQoIs_large_verbose(input_set, qoiIndices=None,
     if input_set._jacobians is None:
         raise ValueError("You must have jacobians to use this method.")
     if qoiIndices is None:
-        qoiIndices = xrange(0, input_set._jacobians.shape[1])
+        qoiIndices = range(0, input_set._jacobians.shape[1])
     if max_qois_return is None:
         max_qois_return = input_dim
     if num_optsets_return is None:
@@ -672,7 +675,7 @@ def chooseOptQoIs_large_verbose(input_set, qoiIndices=None,
     optsingvals_list = []
 
     # Given good sets of QoIs of size (n - 1), find the good sets of size n
-    for qois_return in xrange(2, max_qois_return + 1):
+    for qois_return in range(2, max_qois_return + 1):
         (good_sets_curr, best_sets_curr, optsingvals_tensor_curr) = \
             find_good_sets(input_set, good_sets_curr, unique_indices,
             num_optsets_return, measskew_tol, measure)

@@ -3,6 +3,9 @@
 # Copyright (C) 2014-2015 The BET Development Team
 
 # import necessary modules
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 import numpy as np
 import bet.sampling.adaptiveSampling as asam
 import bet.postProcess.plotDomains as pDom
@@ -27,7 +30,7 @@ bin_size = (np.max(Q, 0)-np.min(Q, 0))*bin_ratio
 points = mdat['points']
 def model(inputs):
     interp_values = np.empty((inputs.shape[0], Q.shape[1])) 
-    for i in xrange(Q.shape[1]):
+    for i in range(Q.shape[1]):
         interp_values[:, i] = griddata(points.transpose(), Q[:, i],
                 inputs)
     return interp_values 
@@ -36,7 +39,7 @@ def model(inputs):
 transition_set = asam.transition_set(.5, .5**5, 1.0)
 
 # Create kernel
-maximum = 1/np.product(bin_size)
+maximum = old_div(1,np.product(bin_size))
 def rho_D(outputs):
     rho_left = np.repeat([Q_ref-.5*bin_size], outputs.shape[0], 0)
     rho_right = np.repeat([Q_ref+.5*bin_size], outputs.shape[0], 0)

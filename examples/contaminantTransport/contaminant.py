@@ -17,6 +17,7 @@ smoothed, and plotted. The samples are then ranked by probability density
 and the volume of high-probability regions are calculated. Probabilistic predictions of other QoI are made.
 
 """
+from __future__ import print_function
 
 import numpy as np
 import bet.calculateP as calculateP
@@ -107,7 +108,7 @@ percentile = 1.0
 
 # print the number of samples that make up the  highest percentile percent samples and
 # ratio of the volume of the parameter domain they take up
-print (num_samples, np.sum(my_discretization_highP._input_sample_set.get_volumes()))
+print((num_samples, np.sum(my_discretization_highP._input_sample_set.get_volumes())))
 
 # Choose unused QoI as prediction QoI and propagate measure onto predicted QoI data space
 QoI_indices_predict = np.array([7])

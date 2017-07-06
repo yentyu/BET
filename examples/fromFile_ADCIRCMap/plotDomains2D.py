@@ -3,6 +3,8 @@
 # Copyright (C) 2014-2015 The BET Development Team
 
 # import necessary modules
+from __future__ import division
+from past.utils import old_div
 import numpy as np
 import bet.postProcess.plotDomains as pDom
 import scipy.io as sio
@@ -24,7 +26,7 @@ bin_ratio = 0.15
 bin_size = (np.max(Q, 0)-np.min(Q, 0))*bin_ratio
 
 # Create kernel
-maximum = 1/np.product(bin_size)
+maximum = old_div(1,np.product(bin_size))
 def rho_D(outputs):
     rho_left = np.repeat([Q_ref-.5*bin_size], outputs.shape[0], 0)
     rho_right = np.repeat([Q_ref+.5*bin_size], outputs.shape[0], 0)

@@ -6,6 +6,7 @@ Evaluate the model at input values.
 
 """
 
+from builtins import range
 import os
 import scipy.io as sio
 import sys

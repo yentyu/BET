@@ -1,7 +1,11 @@
+from __future__ import division
+from __future__ import print_function
 # Copyright (C) 2016 The BET Development Team
 
 # Steve Mattis 03/23/2016
 
+from builtins import zip
+from past.utils import old_div
 import unittest, os, glob
 import numpy as np
 import numpy.testing as nptest
@@ -122,7 +126,7 @@ class Test_sample_set(unittest.TestCase):
         for attrname in sample.sample_set.vector_names+sample.sample_set.\
                 all_ndarray_names:
             curr_attr = getattr(loaded_set, attrname)
-            print attrname
+            print(attrname)
             if curr_attr is not None:
                 nptest.assert_array_equal(getattr(self.sam_set, attrname),
                         curr_attr)
@@ -153,7 +157,7 @@ class Test_sample_set(unittest.TestCase):
         for attrname in sample.sample_set.vector_names+sample.sample_set.\
                 all_ndarray_names:
             curr_attr = getattr(loaded_set, attrname)
-            print attrname
+            print(attrname)
             if curr_attr is not None:
                 nptest.assert_array_equal(getattr(self.sam_set, attrname),
                         curr_attr)
@@ -705,8 +709,8 @@ class Test_discretization_simple(unittest.TestCase):
         lam_domain[:, 1] = lam_right
 
         num_samples_dim = 2
-        start = lam_left+lam_width/(2*num_samples_dim)
-        stop = lam_right-lam_width/(2*num_samples_dim)
+        start = lam_left+old_div(lam_width,(2*num_samples_dim))
+        stop = lam_right-old_div(lam_width,(2*num_samples_dim))
         d1_arrays = []
         
         for l, r in zip(start, stop):
@@ -716,7 +720,7 @@ class Test_discretization_simple(unittest.TestCase):
         s_set.set_domain(lam_domain)
         s_set.set_values(util.meshgrid_ndim(d1_arrays))
 
-        volume_exact = 1.0/s_set._values.shape[0]
+        volume_exact = old_div(1.0,s_set._values.shape[0])
 
         emulated_samples = s_set.copy()
         emulated_samples.update_bounds_local(1001)
@@ -753,8 +757,8 @@ class Test_discretization_simple(unittest.TestCase):
         lam_domain[:, 1] = lam_right
 
         num_samples_dim = 2
-        start = lam_left+lam_width/(2*num_samples_dim)
-        stop = lam_right-lam_width/(2*num_samples_dim)
+        start = lam_left+old_div(lam_width,(2*num_samples_dim))
+        stop = lam_right-old_div(lam_width,(2*num_samples_dim))
         d1_arrays = []
         
         for l, r in zip(start, stop):
@@ -764,7 +768,7 @@ class Test_discretization_simple(unittest.TestCase):
         s_set.set_domain(lam_domain)
         s_set.set_values(util.meshgrid_ndim(d1_arrays))
 
-        volume_exact = 1.0/s_set._values.shape[0]
+        volume_exact = old_div(1.0,s_set._values.shape[0])
 
         emulated_samples = s_set.copy()
         emulated_samples.update_bounds_local(1001)
@@ -806,8 +810,8 @@ class TestEstimateVolume(unittest.TestCase):
         self.lam_domain[:, 1] = lam_right
 
         num_samples_dim = 2
-        start = lam_left+lam_width/(2*num_samples_dim)
-        stop = lam_right-lam_width/(2*num_samples_dim)
+        start = lam_left+old_div(lam_width,(2*num_samples_dim))
+        stop = lam_right-old_div(lam_width,(2*num_samples_dim))
         d1_arrays = []
         
         for l, r in zip(start, stop):
@@ -816,15 +820,15 @@ class TestEstimateVolume(unittest.TestCase):
         self.s_set = sample.sample_set(util.meshgrid_ndim(d1_arrays).shape[1])
         self.s_set.set_domain(self.lam_domain)
         self.s_set.set_values(util.meshgrid_ndim(d1_arrays))
-        print util.meshgrid_ndim(d1_arrays).shape
-        self.volume_exact = 1.0/self.s_set._values.shape[0]
+        print(util.meshgrid_ndim(d1_arrays).shape)
+        self.volume_exact = old_div(1.0,self.s_set._values.shape[0])
         self.s_set.estimate_volume(n_mc_points= 1001)
         self.lam_vol = self.s_set._volumes
     def test_dimension(self):
         """
         Check the dimension.
         """
-        print self.lam_vol.shape, self.s_set._values.shape
+        print(self.lam_vol.shape, self.s_set._values.shape)
         nptest.assert_array_equal(self.lam_vol.shape, (len(self.s_set._values), ))
        
     def test_volumes(self):
@@ -854,8 +858,8 @@ class TestEstimateVolumeEmulated(unittest.TestCase):
         self.lam_domain[:, 1] = lam_right
 
         num_samples_dim = 2
-        start = lam_left+lam_width/(2*num_samples_dim)
-        stop = lam_right-lam_width/(2*num_samples_dim)
+        start = lam_left+old_div(lam_width,(2*num_samples_dim))
+        stop = lam_right-old_div(lam_width,(2*num_samples_dim))
         d1_arrays = []
         
         for l, r in zip(start, stop):
@@ -864,8 +868,8 @@ class TestEstimateVolumeEmulated(unittest.TestCase):
         self.s_set = sample.sample_set(util.meshgrid_ndim(d1_arrays).shape[1])
         self.s_set.set_domain(self.lam_domain)
         self.s_set.set_values(util.meshgrid_ndim(d1_arrays))
-        print util.meshgrid_ndim(d1_arrays).shape
-        self.volume_exact = 1.0/self.s_set._values.shape[0]
+        print(util.meshgrid_ndim(d1_arrays).shape)
+        self.volume_exact = old_div(1.0,self.s_set._values.shape[0])
         emulated_samples = self.s_set.copy()
         emulated_samples.update_bounds_local(1001)
         emulated_samples.set_values_local(emulated_samples._width_local\
@@ -877,7 +881,7 @@ class TestEstimateVolumeEmulated(unittest.TestCase):
         """
         Check the dimension.
         """
-        print self.lam_vol.shape, self.s_set._values.shape
+        print(self.lam_vol.shape, self.s_set._values.shape)
         nptest.assert_array_equal(self.lam_vol.shape, (len(self.s_set._values), ))
        
     def test_volumes(self):
@@ -908,8 +912,8 @@ class TestEstimateLocalVolume(unittest.TestCase):
         self.lam_domain[:, 1] = lam_right
 
         num_samples_dim = 2
-        start = lam_left+lam_width/(2*num_samples_dim)
-        stop = lam_right-lam_width/(2*num_samples_dim)
+        start = lam_left+old_div(lam_width,(2*num_samples_dim))
+        stop = lam_right-old_div(lam_width,(2*num_samples_dim))
         d1_arrays = []
         
         for l, r in zip(start, stop):
@@ -918,7 +922,7 @@ class TestEstimateLocalVolume(unittest.TestCase):
         self.s_set = sample.sample_set(util.meshgrid_ndim(d1_arrays).shape[1])
         self.s_set.set_domain(self.lam_domain)
         self.s_set.set_values(util.meshgrid_ndim(d1_arrays))
-        self.volume_exact = 1.0/self.s_set._values.shape[0]
+        self.volume_exact = old_div(1.0,self.s_set._values.shape[0])
         self.s_set.estimate_local_volume()
         self.lam_vol = self.s_set._volumes
 
@@ -953,7 +957,7 @@ class TestExactVolume1D(unittest.TestCase):
                 num_samples+1)
         self.samples = (edges[1:]+edges[:-1])*.5
         np.random.shuffle(self.samples)
-        self.volume_exact = 1./self.samples.shape[0]
+        self.volume_exact = old_div(1.,self.samples.shape[0])
         self.volume_exact = self.volume_exact * np.ones((num_samples,))
         s_set = sample.voronoi_sample_set(dim = 1)
         s_set.set_domain(self.lam_domain)
@@ -1021,8 +1025,8 @@ class TestEstimateRadii(unittest.TestCase):
         self.lam_domain[:, 1] = lam_right
 
         num_samples_dim = 2
-        start = lam_left+lam_width/(2*num_samples_dim)
-        stop = lam_right-lam_width/(2*num_samples_dim)
+        start = lam_left+old_div(lam_width,(2*num_samples_dim))
+        stop = lam_right-old_div(lam_width,(2*num_samples_dim))
         d1_arrays = []
         
         for l, r in zip(start, stop):
@@ -1074,8 +1078,8 @@ class TestEstimateRadiiAndVolume(unittest.TestCase):
         self.lam_domain[:, 1] = lam_right
 
         num_samples_dim = 2
-        start = lam_left+lam_width/(2*num_samples_dim)
-        stop = lam_right-lam_width/(2*num_samples_dim)
+        start = lam_left+old_div(lam_width,(2*num_samples_dim))
+        stop = lam_right-old_div(lam_width,(2*num_samples_dim))
         d1_arrays = []
         
         for l, r in zip(start, stop):
@@ -1084,7 +1088,7 @@ class TestEstimateRadiiAndVolume(unittest.TestCase):
         self.s_set = sample.sample_set(util.meshgrid_ndim(d1_arrays).shape[1])
         self.s_set.set_domain(self.lam_domain)
         self.s_set.set_values(util.meshgrid_ndim(d1_arrays))
-        self.volume_exact = 1.0/self.s_set._values.shape[0]
+        self.volume_exact = old_div(1.0,self.s_set._values.shape[0])
         
         self.radii_exact = np.sqrt(3*.25**2)
         
@@ -1157,7 +1161,7 @@ class Test_rectangle_sample_set(unittest.TestCase):
         for attrname in sample.sample_set.vector_names+sample.sample_set.\
                 all_ndarray_names:
             curr_attr = getattr(loaded_set, attrname)
-            print attrname
+            print(attrname)
             if curr_attr is not None:
                 nptest.assert_array_equal(getattr(self.sam_set, attrname),
                         curr_attr)
@@ -1187,7 +1191,7 @@ class Test_rectangle_sample_set(unittest.TestCase):
         for attrname in sample.sample_set.vector_names+sample.sample_set.\
                 all_ndarray_names:
             curr_attr = getattr(loaded_set, attrname)
-            print attrname
+            print(attrname)
             if curr_attr is not None:
                 nptest.assert_array_equal(getattr(self.sam_set, attrname),
                         curr_attr)
@@ -1276,7 +1280,7 @@ class Test_ball_sample_set(unittest.TestCase):
         else:
             local_file_name = file_name
 
-        print os.path.exists(local_file_name)
+        print(os.path.exists(local_file_name))
 
         sample.save_sample_set(self.sam_set, file_name, "TEST", globalize)
         comm.barrier()
@@ -1289,7 +1293,7 @@ class Test_ball_sample_set(unittest.TestCase):
         for attrname in sample.sample_set.vector_names+sample.sample_set.\
                 all_ndarray_names:
             curr_attr = getattr(loaded_set, attrname)
-            print attrname
+            print(attrname)
             if curr_attr is not None:
                 nptest.assert_array_equal(getattr(self.sam_set, attrname),
                         curr_attr)
@@ -1320,7 +1324,7 @@ class Test_ball_sample_set(unittest.TestCase):
         for attrname in sample.sample_set.vector_names+sample.sample_set.\
                 all_ndarray_names:
             curr_attr = getattr(loaded_set, attrname)
-            print attrname
+            print(attrname)
             if curr_attr is not None:
                 nptest.assert_array_equal(getattr(self.sam_set, attrname),
                         curr_attr)
@@ -1409,7 +1413,7 @@ class Test_cartesian_sample_set(unittest.TestCase):
         else:
             local_file_name = file_name
 
-        print os.path.exists(local_file_name)
+        print(os.path.exists(local_file_name))
 
         sample.save_sample_set(self.sam_set, file_name, "TEST", globalize)
         comm.barrier()
@@ -1428,7 +1432,7 @@ class Test_cartesian_sample_set(unittest.TestCase):
         for attrname in sample.sample_set.vector_names+sample.sample_set.\
                 all_ndarray_names:
             curr_attr = getattr(loaded_set, attrname)
-            print attrname
+            print(attrname)
             if curr_attr is not None:
                 nptest.assert_array_equal(getattr(self.sam_set, attrname),
                         curr_attr)
@@ -1458,7 +1462,7 @@ class Test_cartesian_sample_set(unittest.TestCase):
         for attrname in sample.sample_set.vector_names+sample.sample_set.\
                 all_ndarray_names:
             curr_attr = getattr(loaded_set, attrname)
-            print attrname
+            print(attrname)
             if curr_attr is not None:
                 nptest.assert_array_equal(getattr(self.sam_set, attrname),
                         curr_attr)

@@ -1,3 +1,8 @@
+from __future__ import division
+from __future__ import print_function
+from builtins import range
+from builtins import object
+from past.utils import old_div
 from dolfin import * 
 import numpy as np
 import petsc4py
@@ -37,11 +42,11 @@ class projectKL(object):
         cov_ij = np.empty((1),dtype=float) # scalar valued function is evaluated in this variable 
         xycor = np.empty((4),dtype=float) # the points to evalute the expression
 
-	print '---------------------------'
-        print '---------------------------'
-        print ' Building Covariance Matrix'
-        print '---------------------------'
-        print '---------------------------'
+	print('---------------------------')
+        print('---------------------------')
+        print(' Building Covariance Matrix')
+        print('---------------------------')
+        print('---------------------------')
         # Loop through global nodes and build the matrix for i < j because of symmetric nature.
         for node_i in range(0,self.domain.getNodes()):
             # global node node_i
@@ -67,17 +72,17 @@ class projectKL(object):
                         # evaluate the expression
                         cov_expr.eval(cov_ij,xycor)
                         if cov_ij[0] > 0:
-			  temp_cov_ij += (1.0/3)*(1.0/3)*cov_ij[0]*self.c_volume_array[elem_i]* \
+			  temp_cov_ij += (old_div(1.0,3))*(old_div(1.0,3))*cov_ij[0]*self.c_volume_array[elem_i]* \
 					  self.c_volume_array[elem_j]
                 cov_mat.setValue(node_i,node_j,temp_cov_ij)
                 cov_mat.setValue(node_j,node_i,temp_cov_ij)
         cov_mat.assemblyBegin()
         cov_mat.assemblyEnd()
-        print '---------------------------'
-        print '---------------------------'
-        print ' Finished Covariance Matrix'
-        print '---------------------------'
-        print '---------------------------'
+        print('---------------------------')
+        print('---------------------------')
+        print(' Finished Covariance Matrix')
+        print('---------------------------')
+        print('---------------------------')
         
         return cov_mat
 
@@ -108,11 +113,11 @@ class projectKL(object):
 	 
         v_to_d_map = vertex_to_dof_map(V)
         
-        print '---------------------------'
-        print '---------------------------'
-        print ' Building Mass Matrix '
-        print '---------------------------'
-        print '---------------------------'
+        print('---------------------------')
+        print('---------------------------')
+        print(' Building Mass Matrix ')
+        print('---------------------------')
+        print('---------------------------')
         for node_i in range(0, self.domain.getNodes()):
 	  for node_j in range(node_i, self.domain.getNodes()):
 	    B_ij_nodes = B_ij[v_to_d_map[node_i],v_to_d_map[node_j]]
@@ -122,11 +127,11 @@ class projectKL(object):
 	
 	B.assemblyBegin()
 	B.assemblyEnd()
-	print '---------------------------'
-	print '---------------------------'
-	print ' Finished Mass Matrix '
-	print '---------------------------'
-	print '---------------------------'
+	print('---------------------------')
+	print('---------------------------')
+	print(' Finished Mass Matrix ')
+	print('---------------------------')
+	print('---------------------------')
         return B
 
     def projectCovToMesh(self,num_kl,cov_expr):
@@ -161,8 +166,8 @@ class projectKL(object):
             # use dof_to_vertex map to map values to the function space
             self.eigen_funcs[eigen_pairs].vector()[:] = x_real[dof_to_vertex_map(V)]#*np.sqrt(lambda_r)
             # divide by norm to make the unit norm again
-            self.eigen_funcs[eigen_pairs].vector()[:] = self.eigen_funcs[eigen_pairs].vector()[:] / \
-	      norm(self.eigen_funcs[eigen_pairs])
+            self.eigen_funcs[eigen_pairs].vector()[:] = old_div(self.eigen_funcs[eigen_pairs].vector()[:], \
+	      norm(self.eigen_funcs[eigen_pairs]))
             self.eigen_vals[eigen_pairs] = lambda_r
 
 

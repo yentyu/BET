@@ -1,5 +1,6 @@
 #!/usr/bin/en python
 
+from builtins import object
 from dolfin import * 
 from numpy import *
 

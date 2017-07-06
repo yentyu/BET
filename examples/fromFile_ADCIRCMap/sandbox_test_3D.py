@@ -4,6 +4,10 @@
 
 # -*- coding: utf-8 -*-
 # import necessary modules
+from __future__ import division
+from __future__ import print_function
+from builtins import range
+from past.utils import old_div
 import numpy as np
 import bet.sampling.adaptiveSampling as asam
 import bet.sampling.basicSampling as bsam
@@ -41,13 +45,13 @@ bin_size = (np.max(Q, 0)-np.min(Q, 0))*bin_ratio
 points = mdat['points']
 def model(inputs):
     interp_values = np.empty((inputs.shape[0], Q.shape[1])) 
-    for i in xrange(Q.shape[1]):
+    for i in range(Q.shape[1]):
         interp_values[:, i] = griddata(points.transpose(), Q[:, i],
                 inputs)
     return interp_values 
 
 # Create kernel
-maximum = 1/np.product(bin_size)
+maximum = old_div(1,np.product(bin_size))
 def rho_D(outputs):
     rho_left = np.repeat([Q_ref-.5*bin_size], outputs.shape[0], 0)
     rho_right = np.repeat([Q_ref+.5*bin_size], outputs.shape[0], 0)
@@ -93,11 +97,11 @@ incdec_results = sampler.run_inc_dec(increase, decrease, tolerance, rho_D,
 # Compare the quality of several sets of samples
 result_list = [gen_results, tk_results, incdec_results]
 
-print "Compare yield of sample sets with various kernels"
+print("Compare yield of sample sets with various kernels")
 ptools.compare_yield(gen_results[3], gen_results[2], gen_results[4])
-print "Compare yield of sample sets with various transition sets bounds"
+print("Compare yield of sample sets with various transition sets bounds")
 ptools.compare_yield(tk_results[3], tk_results[2], tk_results[4])
-print "Compare yield of sample sets with variouos increase/decrease ratios"
+print("Compare yield of sample sets with variouos increase/decrease ratios")
 ptools.compare_yield(incdec_results[3], incdec_results[2], incdec_results[4])
 
 # Read in points_ref and plot results

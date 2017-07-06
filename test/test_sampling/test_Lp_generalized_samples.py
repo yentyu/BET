@@ -4,7 +4,9 @@
 """
 This module contains unittests for :mod:`~bet.sampling.basicSampling:`
 """
+from __future__ import division
 
+from past.utils import old_div
 import unittest, os, bet
 import numpy.testing as nptest
 import numpy as np
@@ -44,7 +46,7 @@ def verify_norm_and_mean(x, r, p):
     if np.isinf(p):
         xpnorm = np.max(np.abs(x), 1)
     else:
-        xpnorm = np.sum(np.abs(x)**p, 1)**(1./p)
+        xpnorm = np.sum(np.abs(x)**p, 1)**(old_div(1.,p))
     assert np.all(xpnorm <= r)
     nptest.assert_allclose(np.mean(x, 0), np.zeros((x.shape[1],)), atol=1e-1)
 
@@ -62,7 +64,7 @@ def verify_norm(x, r, p):
     if np.isinf(p):
         xpnorm = np.max(np.abs(x), 1)
     else:
-        xpnorm = np.sum(np.abs(x)**p, 1)**(1./p)
+        xpnorm = np.sum(np.abs(x)**p, 1)**(old_div(1.,p))
     assert np.all(xpnorm <= r)
 
 def test_Lp_generalized_uniform():

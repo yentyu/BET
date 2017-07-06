@@ -5,13 +5,16 @@ This module contains tests for :module:`bet.sensitivity.gradients`.
 Most of these tests should make sure certain values are within a tolerance
 rather than exact due to machine precision.
 """
+from __future__ import division
+from builtins import object
+from past.utils import old_div
 import unittest
 import bet.sensitivity.gradients as grad
 import numpy as np
 import numpy.testing as nptest
 import bet.sample as sample
 
-class GradientsMethods:
+class GradientsMethods(object):
     """
     Test all methods in :module:`bet.sensitivity.gradients`
     """
@@ -186,7 +189,7 @@ class GradientsMethods:
         normG = np.linalg.norm(self.jacobians, ord=1, axis=2)
 
         # If its a zero vectors, make it the unit vector in input_dim
-        self.jacobians[normG==0] = 1.0/self.input_dim
+        self.jacobians[normG==0] = old_div(1.0,self.input_dim)
         nptest.assert_array_almost_equal(np.linalg.norm(self.jacobians, ord=1,
             axis=2), np.ones((self.jacobians.shape[0],
                 self.jacobians.shape[1])))
@@ -214,7 +217,7 @@ class GradientsMethods:
         normG = np.linalg.norm(self.jacobians, ord=1, axis=2)
 
         # If its a zero vectors, make it the unit vector in input_dim
-        self.jacobians[normG==0] = 1.0/self.input_dim
+        self.jacobians[normG==0] = old_div(1.0,self.input_dim)
         nptest.assert_array_almost_equal(np.linalg.norm(self.jacobians, ord=1,
             axis=2), np.ones((self.jacobians.shape[0],
                 self.jacobians.shape[1])))
@@ -243,13 +246,13 @@ class GradientsMethods:
                 ord=1, axis=2)
 
         # If its a zero vectors, make it the unit vector in input_dim
-        self.jacobians[normG==0] = 1.0/self.input_dim
+        self.jacobians[normG==0] = old_div(1.0,self.input_dim)
         nptest.assert_array_almost_equal(np.linalg.norm(self.jacobians, ord=1,
             axis=2), np.ones((self.jacobians.shape[0],
                 self.jacobians.shape[1])))
 
 # Test the accuracy of the gradient approximation methods
-class GradientsAccuracy:
+class GradientsAccuracy(object):
     """
     Test the accuracy of the gradient approximation method in
         :module:`bet.sensitivity.gradients`

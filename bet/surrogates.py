@@ -3,6 +3,8 @@
 """
 This module provides methods for generating and using surrogate models. 
 """
+from builtins import range
+from builtins import object
 import numpy as np
 import bet.sample as sample
 import bet.calculateP.calculateError as calculateError

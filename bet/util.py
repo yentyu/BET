@@ -4,6 +4,7 @@
 This module contains general tools for BET.
 """
 
+from builtins import range
 import sys
 import collections
 import numpy as np
@@ -75,7 +76,7 @@ def get_global_values(array, shape=None):
         # Figure out the subtype of the elements of the array
         dtype = array.dtype
         mpi_dtype = False
-        for ptype in possible_types.iterkeys():
+        for ptype in possible_types.keys():
             if np.issubdtype(dtype, ptype):
                 mpi_dtype = True
                 dtype = ptype

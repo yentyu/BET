@@ -9,7 +9,10 @@ sovle an inverse problem this guving use information about the inverse mapping.
 Each sample consists for a paramter coordinate, data coordinate pairing. We
 assume the measure on both spaces in Lebesgue.
 """
+from __future__ import division
 
+from builtins import object
+from past.utils import old_div
 import collections
 import os
 import warnings
@@ -121,7 +124,7 @@ def random_sample_set(sample_type, input_obj, num_samples,
             comm.size)[comm.rank])
     elif sample_type == "random" or "r":
         # define local number of samples
-        num_samples_local = int((num_samples/comm.size) + \
+        num_samples_local = int((old_div(num_samples,comm.size)) + \
             (comm.rank < num_samples%comm.size))
         # update the bounds based on the number of samples
         input_sample_set.update_bounds_local(num_samples_local)
@@ -192,8 +195,8 @@ def regular_sample_set(input_obj, num_samples_per_dim=1):
 
     vec_samples_dimension = np.empty((dim), dtype=object)
     for i in np.arange(0, dim):
-        bin_width = (input_domain[i, 1] - input_domain[i, 0]) / \
-                    np.float(num_samples_per_dim[i])
+        bin_width = old_div((input_domain[i, 1] - input_domain[i, 0]), \
+                    np.float(num_samples_per_dim[i]))
         vec_samples_dimension[i] = list(np.linspace(
             input_domain[i, 0] - 0.5 * bin_width,
             input_domain[i, 1] + 0.5 * bin_width,

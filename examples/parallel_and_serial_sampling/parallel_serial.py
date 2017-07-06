@@ -5,6 +5,7 @@
 # This demonstrates how to use BET in parallel to sample a serial external model. 
 # run by calling "mpirun -np nprocs python parallel_serial.py"
 
+from builtins import str
 import os, subprocess
 import scipy.io as sio
 import bet.sampling.basicSampling as bsam

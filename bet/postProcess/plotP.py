@@ -3,7 +3,11 @@
 """
 This module provides methods for plotting probabilities. 
 """
+from __future__ import division
 
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import copy, math
 import numpy as np
 import matplotlib
@@ -204,15 +208,15 @@ def plot_1D_marginal_probs(marginals, bins, sample_set,
     lam_domain = sample_obj.get_domain()
 
     if comm.rank == 0:
-        index = copy.deepcopy(marginals.keys())
+        index = copy.deepcopy(list(marginals.keys()))
         index.sort()
         for i in index:
             x_range = np.linspace(lam_domain[i, 0], lam_domain[i, 1],
                     len(bins[i])-1) 
             fig = plt.figure(i)
             ax = fig.add_subplot(111)
-            ax.plot(x_range, marginals[i]/(bins[i][1]-bins[i][0]))
-            ax.set_ylim([0, 1.05*np.max(marginals[i]/(bins[i][1]-bins[i][0]))])
+            ax.plot(x_range, old_div(marginals[i],(bins[i][1]-bins[i][0])))
+            ax.set_ylim([0, 1.05*np.max(old_div(marginals[i],(bins[i][1]-bins[i][0])))])
             if lam_ref is not None:
                 ax.plot(lam_ref[i], 0.0, 'ko', markersize=10)
             if lambda_label is None:
@@ -280,17 +284,17 @@ def plot_2D_marginal_probs(marginals, bins, sample_set,
         from mpl_toolkits.mplot3d import Axes3D
         from matplotlib.ticker import LinearLocator, FormatStrFormatter
     if comm.rank == 0:
-        pairs = copy.deepcopy(marginals.keys())
+        pairs = copy.deepcopy(list(marginals.keys()))
         pairs.sort()
         for k, (i, j) in enumerate(pairs):
             fig = plt.figure(k)
             ax = fig.add_subplot(111)
             boxSize = (bins[i][1]-bins[i][0])*(bins[j][1]-bins[j][0])
-            quadmesh = ax.imshow(marginals[(i, j)].transpose()/boxSize,
+            quadmesh = ax.imshow(old_div(marginals[(i, j)].transpose(),boxSize),
                     interpolation='bicubic', cmap=cm.CMRmap_r, 
                     extent=[lam_domain[i][0], lam_domain[i][1],
                     lam_domain[j][0], lam_domain[j][1]], origin='lower',
-                    vmax=marginals[(i, j)].max()/boxSize, vmin=0, aspect='auto')
+                    vmax=old_div(marginals[(i, j)].max(),boxSize), vmin=0, aspect='auto')
             if lam_ref is not None:
                 ax.plot(lam_ref[i], lam_ref[j], 'wo', markersize=10)
             if lambda_label is None:
@@ -320,8 +324,8 @@ def plot_2D_marginal_probs(marginals, bins, sample_set,
             for k, (i, j) in enumerate(pairs):
                 fig = plt.figure(k)
                 ax = fig.gca(projection='3d')
-                X = bins[i][:-1] + np.diff(bins[i])/2 
-                Y = bins[j][:-1] + np.diff(bins[j])/2
+                X = bins[i][:-1] + old_div(np.diff(bins[i]),2) 
+                Y = bins[j][:-1] + old_div(np.diff(bins[j]),2)
                 X, Y = np.meshgrid(X, Y, indexing='ij')
                 surf = ax.plot_surface(X, Y, marginals[(i, j)], rstride=1,
                         cstride=1, cmap=cm.coolwarm, linewidth=0,
@@ -362,14 +366,14 @@ def smooth_marginals_1D(marginals, bins, sigma=10.0):
     if isinstance(sigma, float):
         sigma = sigma*np.ones(len(bins), dtype=np.int)
     marginals_smooth = {}
-    index = copy.deepcopy(marginals.keys())
+    index = copy.deepcopy(list(marginals.keys()))
     index.sort()
     for i in index:    
         nx = len(bins[i])-1
         dx = bins[i][1] - bins[i][0]
         augx = int(math.ceil(3*sigma[i]/dx))
         x_kernel = np.linspace(-nx*dx/2, nx*dx/2, nx)
-        kernel = np.exp(-(x_kernel/sigma[i])**2)
+        kernel = np.exp(-(old_div(x_kernel,sigma[i]))**2)
         aug_kernel = np.zeros((nx+2*augx,))
         aug_marginals = np.zeros((nx+2*augx,))
 
@@ -380,7 +384,7 @@ def smooth_marginals_1D(marginals, bins, sigma=10.0):
 
         aug_marginals_smooth = np.real(ifft(fft(aug_kernel)*fft(aug_marginals)))
         marginals_smooth[i] = aug_marginals_smooth[augx:augx+nx]
-        marginals_smooth[i] = marginals_smooth[i]/np.sum(marginals_smooth[i])
+        marginals_smooth[i] = old_div(marginals_smooth[i],np.sum(marginals_smooth[i]))
 
     return marginals_smooth
 
@@ -403,7 +407,7 @@ def smooth_marginals_2D(marginals, bins, sigma=10.0):
     if isinstance(sigma, float):
         sigma = sigma*np.ones(len(bins), dtype=np.int)
     marginals_smooth = {}
-    pairs = copy.deepcopy(marginals.keys())
+    pairs = copy.deepcopy(list(marginals.keys()))
     pairs.sort()
     for (i, j) in pairs:   
         nx = len(bins[i])-1
@@ -418,7 +422,7 @@ def smooth_marginals_2D(marginals, bins, sigma=10.0):
         y_kernel = np.linspace(-ny*dy/2, ny*dy/2, ny)
         X, Y = np.meshgrid(x_kernel, y_kernel, indexing='ij')
 
-        kernel = np.exp(-(X/sigma[i])**2-(Y/sigma[j])**2)
+        kernel = np.exp(-(old_div(X,sigma[i]))**2-(old_div(Y,sigma[j]))**2)
         aug_kernel = np.zeros((nx+2*augx, ny+2*augy))
         aug_marginals = np.zeros((nx+2*augx, ny+2*augy))
 
@@ -432,8 +436,8 @@ def smooth_marginals_2D(marginals, bins, sigma=10.0):
         aug_marginals_smooth = np.real(aug_marginals_smooth)
         marginals_smooth[(i, j)] = aug_marginals_smooth[augx:augx+nx, 
                 augy:augy+ny]
-        marginals_smooth[(i, j)] = marginals_smooth[(i, 
-            j)]/np.sum(marginals_smooth[(i, j)])
+        marginals_smooth[(i, j)] = old_div(marginals_smooth[(i, 
+            j)],np.sum(marginals_smooth[(i, j)]))
 
     return marginals_smooth
 

@@ -6,7 +6,9 @@ This module contains tests for :module:`bet.postProcess.plotP`.
 
 Tests for correct computation of marginals and plotting.
 """
+from __future__ import division
 
+from past.utils import old_div
 import unittest
 import bet.calculateP.calculateP as calcP
 import bet.calculateP.simpleFunP as simpleFunP
@@ -38,8 +40,8 @@ class Test_calc_marg_1D(unittest.TestCase):
                                              emulated_input_samples.get_domain()[0][1],
                                              num_samples+1))
 
-        emulated_input_samples.set_probabilities_local(1.0/float(comm.size)*(1.0/float(\
-                emulated_input_samples.get_values_local().shape[0]))\
+        emulated_input_samples.set_probabilities_local(1.0/float(comm.size)*(old_div(1.0,float(\
+                emulated_input_samples.get_values_local().shape[0])))\
                 *np.ones((emulated_input_samples.get_values_local().shape[0],)))
 
         emulated_input_samples.check_num()
@@ -85,7 +87,7 @@ class Test_calc_marg_2D(unittest.TestCase):
                 emulated_input_samples.get_domain()[1][1], 10))))
 
         emulated_input_samples.set_probabilities_local(1.0/float(comm.size)*\
-                (1.0/float(emulated_input_samples.get_values_local().shape[0]))*\
+                (old_div(1.0,float(emulated_input_samples.get_values_local().shape[0])))*\
                 np.ones((emulated_input_samples.get_values_local().shape[0],)))
         emulated_input_samples.check_num()
 

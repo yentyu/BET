@@ -1,6 +1,8 @@
+from __future__ import print_function
 # Copyright (C) 2016 The BET Development Team
 
 # -*- coding: utf-8 -*-
+from builtins import range
 import numpy as np
 from dolfin import *
 from meshDS import meshDS
@@ -22,8 +24,8 @@ def my_model(parameter_sample):
 
     # number of KL expansion terms.
     numKL = np.size(parameter_sample[1:])
-    print 'hi'
-    print xi_k
+    print('hi')
+    print(xi_k)
 
     '''
     ++++++++++++++++ Steps in Computing the Numerical KL Expansion ++++++++++
@@ -144,7 +146,7 @@ def my_model(parameter_sample):
 
 
 def usage():
-    print "usage: [io_file]"
+    print("usage: [io_file]")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

@@ -5,6 +5,10 @@ This module provides methods for creating simple function approximations to be
 used by :mod:`~bet.calculateP.calculateP`. These simple function approximations
 are returned as `bet.sample.sample_set` objects.
 """
+from __future__ import division
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import collections, logging
 import numpy as np
 from bet.Comm import comm, MPI 
@@ -179,7 +183,7 @@ def uniform_partition_uniform_distribution_rectangle_size(data_set,
     :math:`\rho_{\mathcal{D}}`.
     '''
     # Generate the samples from :math:`\rho_{\mathcal{D}}`
-    num_d_emulate_local = int((num_d_emulate/comm.size) + \
+    num_d_emulate_local = int((old_div(num_d_emulate,comm.size)) + \
                         (comm.rank < num_d_emulate%comm.size))
     d_distr_emulate = rect_size * (np.random.random((num_d_emulate_local,
                                                      dim)) - 0.5) + Q_ref
@@ -188,7 +192,7 @@ def uniform_partition_uniform_distribution_rectangle_size(data_set,
     (_, k) = s_set.query(d_distr_emulate)
 
     count_neighbors = np.zeros((M,), dtype=np.int)
-    for i in xrange(M):
+    for i in range(M):
         count_neighbors[i] = np.sum(np.equal(k, i))
 
     # Use the binning to define :math:`\rho_{\mathcal{D},M}`
@@ -196,7 +200,7 @@ def uniform_partition_uniform_distribution_rectangle_size(data_set,
     comm.Allreduce([count_neighbors, MPI.INT], [ccount_neighbors, MPI.INT],
                    op=MPI.SUM)
     count_neighbors = ccount_neighbors
-    rho_D_M = count_neighbors.astype(np.float64) / float(num_d_emulate)
+    rho_D_M = old_div(count_neighbors.astype(np.float64), float(num_d_emulate))
     s_set.set_probabilities(rho_D_M)
 
     '''
@@ -355,7 +359,7 @@ def regular_partition_uniform_distribution_rectangle_size(data_set, Q_ref=None,
     mins = [Q_ref - 0.5*np.array(rect_size)]
 
     xi = []
-    for i in xrange(dim):
+    for i in range(dim):
         xi.append(np.linspace(mins[0][i], maxes[0][i], 
             cells_per_dimension[i] + 1))
     
@@ -368,7 +372,7 @@ def regular_partition_uniform_distribution_rectangle_size(data_set, Q_ref=None,
     s_set.exact_volume_lebesgue()
     vol = np.sum(s_set._volumes[0:-1])
     prob = np.zeros(s_set._volumes.shape)
-    prob[0:-1] = s_set._volumes[0:-1]/vol
+    prob[0:-1] = old_div(s_set._volumes[0:-1],vol)
     s_set.set_probabilities(prob)
 
     if isinstance(data_set, samp.discretization):
@@ -494,7 +498,7 @@ def uniform_partition_uniform_distribution_data_samples(data_set):
         msg += "bet.sample.discretization or np.ndarray"
         raise wrong_argument_type(msg)
     
-    s_set.set_probabilities(np.ones((num,), dtype=np.float)/num)
+    s_set.set_probabilities(old_div(np.ones((num,), dtype=np.float),num))
 
     if isinstance(data_set, samp.discretization):
         data_set._output_probability_set = s_set
@@ -544,7 +548,7 @@ def normal_partition_normal_distribution(data_set, Q_ref, std, M,
     logging.info("std.shape "+str(std.shape))
 
     if comm.rank == 0:
-        for i in xrange(len(Q_ref)):
+        for i in range(len(Q_ref)):
             d_distr_samples[:, i] = np.random.normal(Q_ref[i], std[i], M)
     comm.Bcast([d_distr_samples, MPI.DOUBLE], root=0)
 
@@ -556,10 +560,10 @@ def normal_partition_normal_distribution(data_set, Q_ref, std, M,
     r'''Now compute probabilities for :math:`\rho_{\mathcal{D},M}` by sampling
     from rho_D First generate samples of rho_D - I sometimes call this
     emulation'''
-    num_d_emulate_local = int((num_d_emulate/comm.size) + \
+    num_d_emulate_local = int((old_div(num_d_emulate,comm.size)) + \
                               (comm.rank < num_d_emulate%comm.size))
     d_distr_emulate = np.zeros((num_d_emulate_local, len(Q_ref)))
-    for i in xrange(len(Q_ref)):
+    for i in range(len(Q_ref)):
         d_distr_emulate[:, i] = np.random.normal(Q_ref[i], std[i],
                                                  num_d_emulate_local)
 
@@ -570,11 +574,11 @@ def normal_partition_normal_distribution(data_set, Q_ref, std, M,
     (_, k) = s_set.query(d_distr_emulate)
     count_neighbors = np.zeros((M,), dtype=np.int)
     volumes = np.zeros((M,))
-    for i in xrange(M):
+    for i in range(M):
         Itemp = np.equal(k, i)
         count_neighbors[i] = np.sum(Itemp)
-        volumes[i] = np.sum(1.0 / stats.multivariate_normal.pdf \
-            (d_distr_emulate[Itemp, :], Q_ref, covariance))
+        volumes[i] = np.sum(old_div(1.0, stats.multivariate_normal.pdf \
+            (d_distr_emulate[Itemp, :], Q_ref, covariance)))
     # Now define probability of the d_distr_samples
     # This together with d_distr_samples defines :math:`\rho_{\mathcal{D},M}`
     ccount_neighbors = np.copy(count_neighbors)
@@ -585,7 +589,7 @@ def normal_partition_normal_distribution(data_set, Q_ref, std, M,
     comm.Allreduce([volumes, MPI.DOUBLE], [cvolumes, MPI.DOUBLE], op=MPI.SUM)
     volumes = cvolumes
     rho_D_M = count_neighbors.astype(np.float64) * volumes
-    rho_D_M = rho_D_M / np.sum(rho_D_M)
+    rho_D_M = old_div(rho_D_M, np.sum(rho_D_M))
     s_set.set_probabilities(rho_D_M)
     s_set.set_volumes(volumes)
 
@@ -647,10 +651,10 @@ def uniform_partition_normal_distribution(data_set, Q_ref, std, M,
     r'''Now compute probabilities for :math:`\rho_{\mathcal{D},M}` by sampling
     from rho_D First generate samples of rho_D - I sometimes call this
     emulation'''
-    num_d_emulate_local = int((num_d_emulate/comm.size) + \
+    num_d_emulate_local = int((old_div(num_d_emulate,comm.size)) + \
             (comm.rank < num_d_emulate%comm.size))
     d_distr_emulate = np.zeros((num_d_emulate_local, len(Q_ref)))
-    for i in xrange(len(Q_ref)):
+    for i in range(len(Q_ref)):
         d_distr_emulate[:, i] = np.random.normal(Q_ref[i], std[i],
                                                  num_d_emulate_local)
 
@@ -661,7 +665,7 @@ def uniform_partition_normal_distribution(data_set, Q_ref, std, M,
     (_, k) = s_set.query(d_distr_emulate)
     count_neighbors = np.zeros((M,), dtype=np.int)
     # volumes = np.zeros((M,))
-    for i in xrange(M):
+    for i in range(M):
         Itemp = np.equal(k, i)
         count_neighbors[i] = np.sum(Itemp)
 
@@ -671,7 +675,7 @@ def uniform_partition_normal_distribution(data_set, Q_ref, std, M,
     comm.Allreduce([count_neighbors, MPI.INT], [ccount_neighbors, MPI.INT],
                    op=MPI.SUM)
     count_neighbors = ccount_neighbors
-    rho_D_M = count_neighbors.astype(np.float64) / float(num_d_emulate)
+    rho_D_M = old_div(count_neighbors.astype(np.float64), float(num_d_emulate))
     s_set.set_probabilities(rho_D_M)
     # NOTE: The computation of q_distr_prob, q_distr_emulate, q_distr_samples
     # above, while informed by the sampling of the map Q, do not require
@@ -769,7 +773,7 @@ def user_partition_user_distribution(data_set, data_partition_set,
     (_, k) = s_set.query(d_distr_emulate)
 
     count_neighbors = np.zeros((M,), dtype=np.int)
-    for i in xrange(M):
+    for i in range(M):
         count_neighbors[i] = np.sum(np.equal(k, i))
 
     # Use the binning to define :math:`\rho_{\mathcal{D},M}`
@@ -777,8 +781,8 @@ def user_partition_user_distribution(data_set, data_partition_set,
     comm.Allreduce([count_neighbors, MPI.INT], [ccount_neighbors, MPI.INT],
                    op=MPI.SUM)
     count_neighbors = ccount_neighbors
-    rho_D_M = count_neighbors.astype(np.float64) / \
-              float(num_d_emulate * comm.size)
+    rho_D_M = old_div(count_neighbors.astype(np.float64), \
+              float(num_d_emulate * comm.size))
     s_set.set_probabilities(rho_D_M)
 
     if isinstance(data_set, samp.discretization):

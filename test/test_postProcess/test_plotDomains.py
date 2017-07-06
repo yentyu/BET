@@ -6,7 +6,11 @@ This module contains tests for :module:`bet.postProcess.plotDomains`.
 
 Tests for the execution of plotting parameter and data domains.
 """
+from __future__ import division
+from __future__ import print_function
 
+from builtins import zip
+from past.utils import old_div
 import unittest, os, glob, bet
 import bet.postProcess.plotDomains as plotDomains
 import bet.util as util
@@ -48,7 +52,7 @@ class test_plotDomains(unittest.TestCase):
              np.linspace(input_samples.get_domain()[3,0],
             input_samples.get_domain()[3,1], 3))))
         input_samples.set_probabilities(
-            (1.0/float(input_samples.get_values().shape[0]))
+            (old_div(1.0,float(input_samples.get_values().shape[0])))
             *np.ones((input_samples.get_values().shape[0],)))
 
         input_samples.check_num() # Check that probabilities and values arrays have same number of entries
@@ -66,7 +70,7 @@ class test_plotDomains(unittest.TestCase):
 
         bin_size = 0.15*(np.max(output_samples.get_domain(), axis=1) -
                          np.min(output_samples.get_domain(), axis=1))
-        maximum = 1/np.product(bin_size)
+        maximum = old_div(1,np.product(bin_size))
 
         def ifun(outputs):
             """
@@ -265,13 +269,13 @@ class test_plotDomains(unittest.TestCase):
                         None, None, qnums, None, showdim, save, False) 
             go = True
         except (RuntimeError, TypeError, NameError):
-            print "ERROR"
-            print data.shape
-            print q_ref
-            print sample_nos
-            print save
-            print qnums
-            print showdim
+            print("ERROR")
+            print(data.shape)
+            print(q_ref)
+            print(sample_nos)
+            print(save)
+            print(qnums)
+            print(showdim)
             go = False
         nptest.assert_equal(go, True)
 

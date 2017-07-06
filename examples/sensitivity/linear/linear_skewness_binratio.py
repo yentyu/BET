@@ -13,6 +13,7 @@ QoIs of size input_dim that has optimal skewness properties which will yield an
 inverse solution that can be approximated well.  The uncertainty in our data is
 relative to the range of data measured in each QoI (bin_ratio).
 """
+from __future__ import print_function
 
 import numpy as np
 import bet.sensitivity.gradients as grad
@@ -119,5 +120,5 @@ percentile = 1.0
 # Print the number of samples that make up the highest percentile percent
 # samples and ratio of the volume of the parameter domain they take up
 if comm.rank == 0:
-    print (num_samples, np.sum(input_samples.get_volumes()[indices_in_inverse]))
+    print((num_samples, np.sum(input_samples.get_volumes()[indices_in_inverse])))
 

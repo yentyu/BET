@@ -6,6 +6,9 @@ All methods that cluster points around centers are written to return the
 input_set._values in the following order : CENTERS, FOLLOWED BY THE CLUSTER
 AROUND THE FIRST CENTER, THEN THE CLUSTER AROUND THE SECOND CENTER AND SO ON.
 """
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 import numpy as np
 import scipy.spatial as spatial
 import bet.util as util
@@ -46,7 +49,7 @@ def sample_lp_ball(input_set, num_close, radius, p_num=2):
         cluster_set.set_domain(input_domain)
     cluster_set.set_values(centers)
 
-    for i in xrange(num_centers):
+    for i in range(num_centers):
         in_bounds = 0
         inflate = 1.0
         while in_bounds < num_close:
@@ -225,13 +228,13 @@ def radial_basis_function(r, kernel=None, ep=None):
         ep = 1.0
 
     if kernel is None or kernel is 'C4Matern':
-        rbf = (1 + (ep * r) + (ep * r)**2 / 3) * np.exp(-ep * r)
+        rbf = (1 + (ep * r) + old_div((ep * r)**2, 3)) * np.exp(-ep * r)
     elif kernel is 'Gaussian':
         rbf = np.exp(-(ep * r)**2)
     elif kernel is 'Multiquadric':
         rbf = (1 + (ep * r)**2)**(0.5)
     elif kernel is 'InverseMultiquadric':
-        rbf = 1 / ((1 + (ep * r)**2)**(0.5))
+        rbf = old_div(1, ((1 + (ep * r)**2)**(0.5)))
     else:
         raise ValueError("The kernel chosen is not currently available.")
 
@@ -259,13 +262,13 @@ def radial_basis_function_dxi(r, xi, kernel=None, ep=None):
         ep = 1.0
 
     if kernel is None or kernel is 'C4Matern':
-        rbfdxi = -(ep**2 * xi * np.exp(-ep * r) * (ep * r + 1)) / 3
+        rbfdxi = old_div(-(ep**2 * xi * np.exp(-ep * r) * (ep * r + 1)), 3)
     elif kernel is 'Gaussian':
         rbfdxi = -2 * ep**2 * xi * np.exp(-(ep * r)**2)
     elif kernel is 'Multiquadric':
-        rbfdxi = (ep**2 * xi) / ((1 + (ep * r)**2)**(0.5))
+        rbfdxi = old_div((ep**2 * xi), ((1 + (ep * r)**2)**(0.5)))
     elif kernel is 'InverseMultiquadric':
-        rbfdxi = -(ep**2 * xi) / ((1 + (ep * r)**2)**(1.5))
+        rbfdxi = old_div(-(ep**2 * xi), ((1 + (ep * r)**2)**(1.5)))
     else:
         raise ValueError("The kernel chosen is not currently available")
 
@@ -318,7 +321,7 @@ def calculate_gradients_rbf(cluster_discretization, num_centers=None,
     # If centers is None we assume the user chose clusters of size
     # input_dim + 2
     if num_centers is None:
-        num_centers = num_model_samples / (input_dim + 2)
+        num_centers = old_div(num_model_samples, (input_dim + 2))
     centers = samples[:num_centers, :]
 
     rbf_tensor = np.zeros([num_centers, num_model_samples, input_dim])
@@ -360,8 +363,8 @@ def calculate_gradients_rbf(cluster_discretization, num_centers=None,
         norm_gradient_tensor[norm_gradient_tensor == 0] = 1.0
 
         # Normalize each gradient vector
-        gradient_tensor = gradient_tensor/np.tile(norm_gradient_tensor,
-            (input_dim, 1, 1)).transpose(1, 2, 0)
+        gradient_tensor = old_div(gradient_tensor,np.tile(norm_gradient_tensor,
+            (input_dim, 1, 1)).transpose(1, 2, 0))
 
     center_input_sample_set = sample.sample_set(input_dim)
     center_input_sample_set.set_values(samples[:num_centers, :])
@@ -412,7 +415,7 @@ def calculate_gradients_ffd(cluster_discretization, normalize=True):
 
     num_model_samples = cluster_discretization.check_nums()
     input_dim = cluster_discretization._input_sample_set.get_dim()
-    num_centers = num_model_samples / (input_dim + 1)
+    num_centers = old_div(num_model_samples, (input_dim + 1))
 
     # Find radii_vec from the first cluster of samples
     radii_vec = samples[num_centers:num_centers + input_dim, :] - samples[0, :]
@@ -427,7 +430,7 @@ def calculate_gradients_ffd(cluster_discretization, normalize=True):
 
     # Compute the gradient vectors using the standard FFD stencil
     gradient_mat = (data[num_centers:] - np.repeat(data[0:num_centers], \
-                   input_dim, axis=0)) * (1. / radii_vec)
+                   input_dim, axis=0)) * (old_div(1., radii_vec))
 
     # Reshape and organize
     gradient_tensor = np.reshape(gradient_mat.transpose(), [output_dim,
@@ -441,8 +444,8 @@ def calculate_gradients_ffd(cluster_discretization, normalize=True):
         norm_gradient_tensor[norm_gradient_tensor == 0] = 1.0
 
         # Normalize each gradient vector
-        gradient_tensor = gradient_tensor/np.tile(norm_gradient_tensor,
-            (input_dim, 1, 1)).transpose(1, 2, 0)
+        gradient_tensor = old_div(gradient_tensor,np.tile(norm_gradient_tensor,
+            (input_dim, 1, 1)).transpose(1, 2, 0))
 
     center_input_sample_set = sample.sample_set(input_dim)
     center_input_sample_set.set_values(samples[:num_centers, :])
@@ -494,7 +497,7 @@ def calculate_gradients_cfd(cluster_discretization, normalize=True):
     num_model_samples = cluster_discretization.check_nums()
     input_dim = cluster_discretization._input_sample_set.get_dim()
 
-    num_centers = num_model_samples / (2*input_dim + 1)
+    num_centers = old_div(num_model_samples, (2*input_dim + 1))
 
     # Find radii_vec from the first cluster of samples
     radii_vec = samples[num_centers:num_centers + input_dim, :] - samples[0, :]
@@ -508,11 +511,11 @@ def calculate_gradients_cfd(cluster_discretization, normalize=True):
         1])
 
     # Construct indices for CFD gradient approxiation
-    inds = np.repeat(range(0, 2 * input_dim * num_centers, 2 * input_dim),
-        input_dim) + np.tile(range(0, input_dim), num_centers)
+    inds = np.repeat(list(range(0, 2 * input_dim * num_centers, 2 * input_dim)),
+        input_dim) + np.tile(list(range(0, input_dim)), num_centers)
     inds = np.array([inds, inds+input_dim]).transpose()
 
-    gradient_mat = (data[inds[:, 0]] - data[inds[:, 1]]) * (0.5 / radii_vec)
+    gradient_mat = (data[inds[:, 0]] - data[inds[:, 1]]) * (old_div(0.5, radii_vec))
 
     # Reshape and organize
     gradient_tensor = np.reshape(gradient_mat.transpose(), [output_dim,
@@ -526,8 +529,8 @@ def calculate_gradients_cfd(cluster_discretization, normalize=True):
         norm_gradient_tensor[norm_gradient_tensor == 0] = 1.0
 
         # Normalize each gradient vector
-        gradient_tensor = gradient_tensor/np.tile(norm_gradient_tensor,
-            (input_dim, 1, 1)).transpose(1, 2, 0)
+        gradient_tensor = old_div(gradient_tensor,np.tile(norm_gradient_tensor,
+            (input_dim, 1, 1)).transpose(1, 2, 0))
 
     center_input_sample_set = sample.sample_set(input_dim)
     center_input_sample_set.set_values(samples[:num_centers, :])

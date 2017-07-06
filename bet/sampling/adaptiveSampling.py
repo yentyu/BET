@@ -11,7 +11,14 @@ inverse mapping. Each sample consists of a parameter coordinate, data
 coordinate pairing. We assume the measure of both spaces is Lebesgue.
 We employ an approach based on using multiple sample chains.
 """
+from __future__ import division
+from __future__ import print_function
 
+from builtins import zip
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import math, os, glob, logging
 import numpy as np
 import scipy.io as sio
@@ -44,7 +51,7 @@ def loadmat(save_file, lb_model=None, hot_start=None, num_chains=None):
         ``kern_old``)
     
     """
-    print hot_start
+    print(hot_start)
     if hot_start is None:
         hot_start = 1
    # LOAD FILES
@@ -62,17 +69,17 @@ def loadmat(save_file, lb_model=None, hot_start=None, num_chains=None):
             tmp_mdat = sio.loadmat(save_file)
         if num_chains is None: 
             num_chains = np.squeeze(tmp_mdat['num_chains'])
-        num_chains_pproc = num_chains / comm.size
+        num_chains_pproc = old_div(num_chains, comm.size)
         if len(mdat_files) == 0:
             logging.info("HOT START using serial file")
             mdat = sio.loadmat(save_file)
             if num_chains is None: 
                 num_chains = np.squeeze(mdat['num_chains'])
-            num_chains_pproc = num_chains / comm.size
+            num_chains_pproc = old_div(num_chains, comm.size)
             disc = sample.load_discretization(save_file)
             kern_old = np.squeeze(mdat['kern_old'])
             all_step_ratios = np.squeeze(mdat['step_ratios'])
-            chain_length = disc.check_nums()/num_chains
+            chain_length = old_div(disc.check_nums(),num_chains)
             if all_step_ratios.shape == (num_chains,
                                                 chain_length):
                 msg = "Serial file, from completed"
@@ -115,10 +122,10 @@ def loadmat(save_file, lb_model=None, hot_start=None, num_chains=None):
                 disc_global.extend(dlist)
             # get num_proc and num_chains_pproc for previous run
             old_num_proc = max((len(mdat_list), 1))
-            old_num_chains_pproc = num_chains/old_num_proc
+            old_num_chains_pproc = old_div(num_chains,old_num_proc)
             # get batch size and/or number of dimensions
-            chain_length = disc_global[0].check_nums()/\
-                    old_num_chains_pproc
+            chain_length = old_div(disc_global[0].check_nums(),\
+                    old_num_chains_pproc)
             disc = disc_global[0].copy()
             # create lists of local data
             temp_input = []
@@ -148,11 +155,11 @@ def loadmat(save_file, lb_model=None, hot_start=None, num_chains=None):
         mdat = sio.loadmat(save_file)
         if num_chains is None: 
             num_chains = np.squeeze(mdat['num_chains'])
-        num_chains_pproc = num_chains / comm.size
+        num_chains_pproc = old_div(num_chains, comm.size)
         disc = sample.load_discretization(save_file)
         kern_old = np.squeeze(mdat['kern_old'])
         all_step_ratios = np.squeeze(mdat['step_ratios'])
-        chain_length = disc.check_nums()/num_chains
+        chain_length = old_div(disc.check_nums(),num_chains)
         # reshape if parallel
         if comm.size > 1:
             temp_input = np.reshape(disc._input_sample_set.\
@@ -180,7 +187,7 @@ def loadmat(save_file, lb_model=None, hot_start=None, num_chains=None):
             0)[comm.rank], (num_chains_pproc,), 'F')
     else:
         all_step_ratios = np.reshape(all_step_ratios, (-1,), 'F')
-    print chain_length*num_chains, chain_length, lb_model
+    print(chain_length*num_chains, chain_length, lb_model)
     new_sampler = sampler(chain_length*num_chains, chain_length, lb_model) 
     return (new_sampler, disc, all_step_ratios, kern_old)
 
@@ -206,8 +213,8 @@ class sampler(bsam.sampler):
         self.chain_length = chain_length
         #: number of samples per processor per batch (either a single int or a
         #:  list of int) 
-        self.num_chains_pproc = int(math.ceil(num_samples/\
-                    float(chain_length*comm.size)))
+        self.num_chains_pproc = int(math.ceil(old_div(num_samples,\
+                    float(chain_length*comm.size))))
         #: number of samples per batch (either a single int or a list of int)
         self.num_chains = comm.size * self.num_chains_pproc
         #: Total number of samples
@@ -216,7 +223,7 @@ class sampler(bsam.sampler):
         #:    ndim), and returns data (N, mdim)
         self.lb_model = lb_model
         #: batch number for this particular chain 
-        self.sample_batch_no = np.repeat(range(self.num_chains), chain_length,
+        self.sample_batch_no = np.repeat(list(range(self.num_chains)), chain_length,
                 0)
 
     def update_mdict(self, mdict):
@@ -270,8 +277,8 @@ class sampler(bsam.sampler):
                     initial_sample_type, criterion)
             results.append(discretization)
             r_step_size.append(step_sizes)
-            results_rD.append(int(sum(rho_D(discretization._output_sample_set.\
-                    get_values())/maximum)))
+            results_rD.append(int(sum(old_div(rho_D(discretization._output_sample_set.\
+                    get_values()),maximum))))
             mean_ss.append(np.mean(step_sizes))
         sort_ind = np.argsort(results_rD)
         return (results, r_step_size, results_rD, sort_ind, mean_ss)
@@ -321,8 +328,8 @@ class sampler(bsam.sampler):
                     initial_sample_type, criterion)
             results.append(discretization)
             r_step_size.append(step_sizes)
-            results_rD.append(int(sum(rho_D(discretization._output_sample_set.\
-                    get_values())/maximum)))
+            results_rD.append(int(sum(old_div(rho_D(discretization._output_sample_set.\
+                    get_values()),maximum))))
             mean_ss.append(np.mean(step_sizes))
         sort_ind = np.argsort(results_rD)
         return (results, r_step_size, results_rD, sort_ind, mean_ss)
@@ -451,14 +458,14 @@ class sampler(bsam.sampler):
                     get_values_local()[-self.num_chains_pproc:, :])
 
             # Determine how many batches have been run
-            start_ind = disc._input_sample_set.get_values_local().\
-                    shape[0]/self.num_chains_pproc
+            start_ind = old_div(disc._input_sample_set.get_values_local().\
+                    shape[0],self.num_chains_pproc)
         
         mdat = dict()
         self.update_mdict(mdat)
         input_old.update_bounds_local()
 
-        for batch in xrange(start_ind, self.chain_length):
+        for batch in range(start_ind, self.chain_length):
             # For each of N samples_old, create N new parameter samples using
             # transition set and step_ratio. Call these samples input_new.
             input_new = t_set.step(step_ratio, input_old)
@@ -479,7 +486,7 @@ class sampler(bsam.sampler):
             # Save and export concatentated arrays
             if self.chain_length < 4:
                 pass
-            elif comm.rank == 0 and (batch+1)%(self.chain_length/4) == 0:
+            elif comm.rank == 0 and (batch+1)%(old_div(self.chain_length,4)) == 0:
                 logging.info("Current chain length: "+\
                             str(batch+1)+"/"+str(self.chain_length))
             disc._input_sample_set.append_values_local(input_new.\
@@ -689,7 +696,7 @@ class rhoD_kernel(kernel):
         if kern_old is None:
             return (kern_new, None)
         else:
-            kern_diff = (kern_new-kern_old)/self.MAX
+            kern_diff = old_div((kern_new-kern_old),self.MAX)
             # Compare to kernel for old data.
             # Is the kernel NOT close?
             kern_close = np.logical_not(np.isclose(kern_diff, 0,
@@ -759,13 +766,13 @@ class maxima_kernel(kernel):
         # Evaluate kernel for new data.
         kern_new = np.zeros((output_new.shape[0]))
 
-        for i in xrange(output_new.shape[0]):
+        for i in range(output_new.shape[0]):
             # calculate distance from each of the maxima
             vec_from_maxima = np.repeat([output_new[i, :]], self.num_maxima, 0)
             vec_from_maxima = vec_from_maxima - self.MAXIMA
             # weight distances by 1/rho_D(maxima)
-            dist_from_maxima = np.linalg.norm(vec_from_maxima, 2,
-                1)/self.rho_max
+            dist_from_maxima = old_div(np.linalg.norm(vec_from_maxima, 2,
+                1),self.rho_max)
             # set kern_new to be the minimum of weighted distances from maxima
             kern_new[i] = np.min(dist_from_maxima)
         
@@ -850,13 +857,13 @@ class maxima_mean_kernel(maxima_kernel):
         kern_new = np.zeros((output_new.shape[0]))
         self.current_clength = self.current_clength + 1
 
-        for i in xrange(output_new.shape[0]):
+        for i in range(output_new.shape[0]):
             # calculate distance from each of the maxima
             vec_from_maxima = np.repeat([output_new[i, :]], self.num_maxima, 0)
             vec_from_maxima = vec_from_maxima - self.MAXIMA
             # weight distances by 1/rho_D(maxima)
-            dist_from_maxima = np.linalg.norm(vec_from_maxima, 2,
-                1)/self.rho_max
+            dist_from_maxima = old_div(np.linalg.norm(vec_from_maxima, 2,
+                1),self.rho_max)
             # set kern_new to be the minimum of weighted distances from maxima
             kern_new[i] = np.min(dist_from_maxima)
         if kern_old is None:
@@ -872,7 +879,7 @@ class maxima_mean_kernel(maxima_kernel):
             # update the estimate of the mean
             self.mean = (self.current_clength-1)*self.mean + np.mean(output_new,
                     0) 
-            self.mean = self.mean / self.current_clength
+            self.mean = old_div(self.mean, self.current_clength)
             # calculate the distance from the mean
             vec_from_mean = output_new - np.repeat([self.mean],
                     output_new.shape[0], 0)

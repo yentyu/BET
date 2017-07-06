@@ -11,7 +11,9 @@ Adapted from natter.LpSphericallySymmetric.py
 https://github.com/fabiansinz/natter
 
 """
+from __future__ import division
 
+from past.utils import old_div
 import numpy as np
 
 def Lp_generalized_normal(dim, num, p=2, scale=1.0, loc=None):
@@ -32,8 +34,8 @@ def Lp_generalized_normal(dim, num, p=2, scale=1.0, loc=None):
     num = int(num)
     dim = int(dim)
     p = float(p)
-    z = np.random.gamma(1./p, scale=scale, size=(num, dim))
-    z = np.abs(z)**(1./p)
+    z = np.random.gamma(old_div(1.,p), scale=scale, size=(num, dim))
+    z = np.abs(z)**(old_div(1.,p))
     samples = z * np.sign(np.random.randn(num, dim))
     if loc is not None:
         samples = samples + loc
@@ -60,8 +62,8 @@ def Lp_generalized_uniform(dim, num, p=2, scale=1.0, loc=None):
         p = float(p)
         # sample from a p-generalized normal with scale 1
         samples = Lp_generalized_normal(dim, num, p)
-        samples_norm = np.sum(np.abs(samples)**p, axis=1)**(1./p)
-        samples = samples/np.reshape(samples_norm, (num, 1))
+        samples_norm = np.sum(np.abs(samples)**p, axis=1)**(old_div(1.,p))
+        samples = old_div(samples,np.reshape(samples_norm, (num, 1)))
         r = np.random.beta(a=dim, b=1., size=(num, 1))
         samples = samples * r * scale
     else:
@@ -92,9 +94,9 @@ def Lp_generalized_beta(dim, num, p=2, d=2, scale=1.0, loc=None):
     p = float(p)
     # sample from a p-generalized normal with scale 1
     samples = Lp_generalized_normal(dim, num, p)
-    samples_norm = np.sum(np.abs(samples)**p, axis=1)**(1./p)
-    samples = samples/np.reshape(samples_norm, (num, 1))
-    r = np.random.beta(a=dim/p, b=d/p, size=(num, 1))**(1./p)
+    samples_norm = np.sum(np.abs(samples)**p, axis=1)**(old_div(1.,p))
+    samples = old_div(samples,np.reshape(samples_norm, (num, 1)))
+    r = np.random.beta(a=old_div(dim,p), b=old_div(d,p), size=(num, 1))**(old_div(1.,p))
     samples = samples * r * scale
     if loc is not None:
         samples = samples + loc

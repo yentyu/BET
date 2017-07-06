@@ -5,6 +5,7 @@
 # This demonstrates how to use BET in serial to sample a parallel external model. 
 # run by calling "python serial_parallel.py"
 
+from builtins import str
 import os, subprocess
 import scipy.io as sio
 import bet.sampling.basicSampling as bsam

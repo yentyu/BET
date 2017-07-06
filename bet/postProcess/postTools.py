@@ -3,6 +3,11 @@
 """
 This module provides methods for postprocessing probabilities and data. 
 """
+from __future__ import division
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import logging
 import numpy as np
 import bet.sample as sample
@@ -55,7 +60,7 @@ def sort_by_rho(sample_set):
     if lam_vol is None:
         indices = np.argsort(P_samples)[::-1][0:nnz]
     else:
-        indices = np.argsort(P_samples/lam_vol)[::-1][0:nnz]
+        indices = np.argsort(old_div(P_samples,lam_vol))[::-1][0:nnz]
     P_samples = P_samples[indices]
     samples = samples[indices, :]
     if lam_vol is not None:
@@ -270,12 +275,12 @@ def in_high_prob(data, rho_D, maximum, sample_nos=None):
     """
     raise PendingDeprecationWarning
     if sample_nos is None:
-        sample_nos = range(data.shape[0])
+        sample_nos = list(range(data.shape[0]))
     if len(data.shape) == 1:
         rD = rho_D(data[sample_nos])
     else:
         rD = rho_D(data[sample_nos, :])
-    adjusted_total_prob = int(sum(rD)/maximum)
+    adjusted_total_prob = int(old_div(sum(rD),maximum))
     logging.info("Samples in box "+str(adjusted_total_prob))
     return adjusted_total_prob
 

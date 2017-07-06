@@ -5,6 +5,7 @@ This module provides a workaround for people without mpi4py installed
 to run BET.
 """
 
+from builtins import object
 import collections
 
 class comm_for_no_mpi4py(object):

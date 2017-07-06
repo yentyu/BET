@@ -6,7 +6,12 @@
 Test methods in :mod:`bet.calculateP.indicatorFunctions`. We only test for
 dimensions 1, 2, 3.
 """
+from __future__ import division
+from __future__ import print_function
 
+from builtins import zip
+from past.utils import old_div
+from builtins import object
 import unittest
 import bet.calculateP.indicatorFunctions as ifun
 import bet.util as util
@@ -65,7 +70,7 @@ class check_inside(object):
                 0.1*np.arange(len(self.center))
         self.right = self.center + .5*self.width
         self.left = self.center - .5*self.width
-        self.boundary_ratio = self.boundary_width/self.width
+        self.boundary_ratio = old_div(self.boundary_width,self.width)
         # create a list of coordinates that are outside the domain
         outcoords_rect = []
         outcoords_sphere = []
@@ -84,7 +89,7 @@ class check_inside(object):
         self.outcoords_sphere = util.meshgrid_ndim(outcoords_sphere)
         self.oncoords_sphere = np.row_stack((-np.eye(dim),
             np.eye(dim).transpose()))*self.radius+self.center 
-        print "SPHERE", self.center, self.radius, self.oncoords_sphere
+        print("SPHERE", self.center, self.radius, self.oncoords_sphere)
 
     def test_hyperrectangle(self):
         """

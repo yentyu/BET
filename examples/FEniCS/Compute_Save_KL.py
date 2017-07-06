@@ -1,6 +1,7 @@
 # Copyright (C) 2016 The BET Development Team
 
 # -*- coding: utf-8 -*-
+from builtins import range
 import numpy as np
 from dolfin import *
 from meshDS import meshDS

@@ -9,6 +9,9 @@ This module contains tests for :module:`bet.calculateP.calculateP`.
 Most of these tests should make sure certain values are within a tolerance
 rather than exact due to the stocastic nature of the algorithms being tested.
 """
+from __future__ import division
+from past.utils import old_div
+from builtins import object
 import os
 import unittest
 import bet
@@ -24,7 +27,7 @@ from bet.Comm import comm
 #data_path = os.path.dirname(bet.__file__) + "/../test/test_calculateP/datafiles"
 data_path = "test/test_calculateP/datafiles"
 
-class prob:
+class prob(object):
     def test_prob_sum_to_1(self):
         """
         Test to see if the prob. sums to 1.
@@ -47,7 +50,7 @@ class prob:
         """
         self.assertEqual(np.sum(np.less(self.inputs._probabilities, 0)), 0)
 
-class prob_on_emulated_samples:
+class prob_on_emulated_samples(object):
     def test_P_sum_to_1(self):
         """
         Test that prob. sums to 1.
@@ -69,7 +72,7 @@ class prob_on_emulated_samples:
         self.assertEqual(np.sum(np.less(self.inputs_emulated._probabilities, 0)), 0)
 
 
-class prob_with_emulated_volumes:
+class prob_with_emulated_volumes(object):
     def test_P_sum_to_1(self):
         """
         Test that probs sum to 1.
@@ -384,7 +387,7 @@ class Test_prob_from_sample_set(unittest.TestCase):
         self.set_old.setup([np.linspace(0,1,21), np.linspace(0,1,21)])
         num_old = self.set_old.check_num()
         probs = np.zeros((num_old,))
-        probs[0:-1] = 1.0/float(num_old-1)
+        probs[0:-1] = old_div(1.0,float(num_old-1))
         self.set_old.set_probabilities(probs)
         
         self.set_em = samp.cartesian_sample_set(dim=2)
@@ -403,7 +406,7 @@ class Test_prob_from_sample_set(unittest.TestCase):
         nptest.assert_almost_equal(self.set_new._probabilities, [0.25, 0.75])
         num_em = self.set_em.check_num()
         probs = np.zeros((num_em,))
-        probs[0:-1] = 1.0/float(num_em-1)
+        probs[0:-1] = old_div(1.0,float(num_em-1))
         self.set_em.set_probabilities(probs)
         self.set_em.global_to_local()
         disc = samp.discretization(input_sample_set=self.set_old,

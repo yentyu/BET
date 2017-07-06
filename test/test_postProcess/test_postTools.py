@@ -6,6 +6,8 @@ This module contains tests for :module:`bet.postProcess.postTools`.
 
 Tests for correct post-processing.
 """
+from __future__ import division
+from past.utils import old_div
 import unittest
 import bet.calculateP.simpleFunP as simpleFunP
 import bet.postProcess.postTools as postTools
@@ -111,7 +113,7 @@ class Test_PostTools(unittest.TestCase):
                                              input_samples.get_domain()[0,1],
                                              num_samples+1))
         #self.samples = np.linspace(self.lam_domain[0][0], self.lam_domain[0][1], num_samples+1)
-        input_samples.set_probabilities((1.0/float(input_samples.get_values().shape[0]))*
+        input_samples.set_probabilities((old_div(1.0,float(input_samples.get_values().shape[0])))*
                                         np.ones((input_samples.get_values().shape[0],)))
         #self.P_samples = (1.0/float(self.samples.shape[0]))*np.ones((self.samples.shape[0],))
         input_samples._probabilities[0] = 0.0
